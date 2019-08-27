@@ -95,6 +95,8 @@ public abstract class NanoHTTPD {
      */
     public class ClientHandler implements Runnable {
 
+        private final String TAG = "ClientHandler";
+
         // 客户端输入流
         private final InputStream inputStream;
         // 连接的Socket
@@ -105,6 +107,7 @@ public abstract class NanoHTTPD {
          * @param acceptSocket socket
          */
         public ClientHandler(InputStream inputStream, Socket acceptSocket) {
+            Log.e(TAG, "---ClientHandler---");
             this.inputStream = inputStream;
             this.acceptSocket = acceptSocket;
         }
@@ -119,6 +122,7 @@ public abstract class NanoHTTPD {
 
         @Override
         public void run() {
+            Log.e(TAG, "---run---");
             // 服务端 输出流
             OutputStream outputStream = null;
             try {
@@ -281,7 +285,9 @@ public abstract class NanoHTTPD {
      * </p>
      */
     public static class DefaultAsyncRunner implements AsyncRunner {
+        private final String TAG = "xiaxl: AsyncRunner";
 
+        // 客户端请求数据
         private long requestCount;
 
         private final List<ClientHandler> running = Collections.synchronizedList(new ArrayList<ClientHandler>());
@@ -306,14 +312,22 @@ public abstract class NanoHTTPD {
             this.running.remove(clientHandler);
         }
 
+        /**
+         * 开启一个线程 执行 {@link ClientHandler}
+         *
+         * @param clientHandler
+         */
         @Override
         public void exec(ClientHandler clientHandler) {
+            Log.e(TAG, "---exec---");
             ++this.requestCount;
             Thread t = new Thread(clientHandler);
             t.setDaemon(true);
             t.setName("NanoHttpd Request Processor (#" + this.requestCount + ")");
             this.running.add(clientHandler);
             t.start();
+
+            Log.e(TAG, "requestCount: " + requestCount);
         }
     }
 
@@ -486,6 +500,7 @@ public abstract class NanoHTTPD {
     private static final Pattern CONTENT_DISPOSITION_ATTRIBUTE_PATTERN = Pattern.compile(CONTENT_DISPOSITION_ATTRIBUTE_REGEX);
 
     protected static class ContentType {
+        private final String TAG = "xiaxl: ContentType";
 
         private static final String ASCII_ENCODING = "US-ASCII";
 
@@ -569,7 +584,7 @@ public abstract class NanoHTTPD {
     }
 
     protected class HTTPSession implements IHTTPSession {
-        private static final String TAG = "xiaxl: HTTPSession";
+        private final String TAG = "xiaxl: HTTPSession";
 
         private static final int REQUEST_BUFFER_LEN = 512;
 
@@ -626,6 +641,7 @@ public abstract class NanoHTTPD {
          * @param inetAddress     ip地址
          */
         public HTTPSession(TempFileManager tempFileManager, InputStream inputStream, OutputStream outputStream, InetAddress inetAddress) {
+            Log.e(TAG, "---HTTPSession---");
             this.tempFileManager = tempFileManager;
             this.inputStream = new BufferedInputStream(inputStream, HTTPSession.BUFSIZE);
             this.outputStream = outputStream;
@@ -866,7 +882,7 @@ public abstract class NanoHTTPD {
 
         @Override
         public void execute() throws IOException {
-            Log.e(TAG, "HTTPSession：---execute---");
+            Log.e(TAG, "---execute---");
             Response r = null;
             try {
                 // Read the first 8192 bytes.
@@ -1343,7 +1359,7 @@ public abstract class NanoHTTPD {
      * HTTP response. Return one of these from serve().
      */
     public static class Response implements Closeable {
-        private static final String TAG = "xiaxl: Response";
+        private final String TAG = "xiaxl: Response";
 
         public interface IStatus {
 
@@ -1786,6 +1802,8 @@ public abstract class NanoHTTPD {
      */
     public class ServerRunnable implements Runnable {
 
+        private final String TAG = "xiaxl: ServerRunnable";
+
         // 超时时间
         private final int timeout;
         // bind 异常
@@ -1802,6 +1820,7 @@ public abstract class NanoHTTPD {
 
         @Override
         public void run() {
+            Log.e(TAG, "---run---");
             try {
                 // bind
                 myServerSocket.bind(hostname != null ? new InetSocketAddress(hostname, myPort) : new InetSocketAddress(myPort));
@@ -1810,16 +1829,19 @@ public abstract class NanoHTTPD {
                 this.bindException = e;
                 return;
             }
+            Log.e(TAG, "bind ok");
             do {
                 try {
+                    Log.e(TAG, "before accept");
                     // 等待客户端连接
                     final Socket finalAccept = NanoHTTPD.this.myServerSocket.accept();
                     // 设置超时时间
                     if (this.timeout > 0) {
                         finalAccept.setSoTimeout(this.timeout);
                     }
-                    // 获取输入流
+                    // 服务端：输入流
                     final InputStream inputStream = finalAccept.getInputStream();
+                    Log.e(TAG, "asyncRunner.exec");
                     // 执行客户端 ClientHandler
                     NanoHTTPD.this.asyncRunner.exec(createClientHandler(finalAccept, inputStream));
                 } catch (IOException e) {
@@ -2042,7 +2064,7 @@ public abstract class NanoHTTPD {
     private final String hostname;
     // 端口号
     private final int myPort;
-    // ServerSocket
+    // {@link ServerSocket}
     private volatile ServerSocket myServerSocket;
 
     private ServerSocketFactory serverSocketFactory = new DefaultServerSocketFactory();
@@ -2051,6 +2073,8 @@ public abstract class NanoHTTPD {
 
     /**
      * Pluggable strategy for asynchronously executing requests.
+     * <p>
+     * 默认为 {@link DefaultAsyncRunner}
      */
     protected AsyncRunner asyncRunner;
 
@@ -2078,6 +2102,10 @@ public abstract class NanoHTTPD {
      * Constructs an HTTP server on given hostname and port.
      */
     public NanoHTTPD(String hostname, int port) {
+        Log.e(TAG, "---NanoHTTPD---");
+        Log.e(TAG, "hostname: " + hostname);
+        Log.e(TAG, "port: " + port);
+        //
         this.hostname = hostname;
         this.myPort = port;
         setTempFileManagerFactory(new DefaultTempFileManagerFactory());
