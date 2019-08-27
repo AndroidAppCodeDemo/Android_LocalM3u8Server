@@ -569,6 +569,7 @@ public abstract class NanoHTTPD {
     }
 
     protected class HTTPSession implements IHTTPSession {
+        private static final String TAG = "xiaxl: HTTPSession";
 
         private static final int REQUEST_BUFFER_LEN = 512;
 
@@ -643,12 +644,12 @@ public abstract class NanoHTTPD {
          * @throws ResponseException
          */
         private void decodeHeader(BufferedReader in, Map<String, String> pre, Map<String, List<String>> parms, Map<String, String> headers) throws ResponseException {
-            Log.e(TAG, "HTTPSession：---decodeHeader---");
+            Log.e(TAG, "---decodeHeader---");
             try {
                 // 读取请求行
                 // Read the request line
                 String inLine = in.readLine();
-                Log.e(TAG, "HTTPSession：inLine: " + inLine);
+                Log.e(TAG, "inLine: " + inLine);
                 if (inLine == null) {
                     return;
                 }
@@ -659,7 +660,7 @@ public abstract class NanoHTTPD {
                     throw new ResponseException(Response.Status.BAD_REQUEST, "BAD REQUEST: Syntax error. Usage: GET /example/file.html");
                 }
                 pre.put("method", st.nextToken());
-                Log.e(TAG, "HTTPSession：method: " + pre.get("method"));
+                Log.e(TAG, "method: " + pre.get("method"));
 
                 if (!st.hasMoreTokens()) {
                     throw new ResponseException(Response.Status.BAD_REQUEST, "BAD REQUEST: Missing URI. Usage: GET /example/file.html");
@@ -677,8 +678,8 @@ public abstract class NanoHTTPD {
                 } else {
                     uri = decodePercent(uri);
                 }
-                Log.e(TAG, "HTTPSession：uri: " + uri);
-                Log.e(TAG, "HTTPSession：parms: " + parms);
+                Log.e(TAG, "uri: " + uri);
+                Log.e(TAG, "parms: " + parms);
 
                 // If there's another token, its protocol version,
                 // followed by HTTP headers.
@@ -690,10 +691,10 @@ public abstract class NanoHTTPD {
                     protocolVersion = "HTTP/1.1";
                     NanoHTTPD.LOG.log(Level.FINE, "no protocol version specified, strange. Assuming HTTP/1.1.");
                 }
-                Log.e(TAG, "HTTPSession：protocolVersion: " + protocolVersion);
+                Log.e(TAG, "protocolVersion: " + protocolVersion);
                 //
                 String line = in.readLine();
-                Log.e(TAG, "HTTPSession：line: " + line);
+                Log.e(TAG, "line: " + line);
                 while (line != null && !line.trim().isEmpty()) {
                     int p = line.indexOf(':');
                     if (p >= 0) {
@@ -701,7 +702,7 @@ public abstract class NanoHTTPD {
                     }
                     line = in.readLine();
                 }
-                Log.e(TAG, "HTTPSession：headers: " + headers);
+                Log.e(TAG, "headers: " + headers);
 
                 pre.put("uri", uri);
             } catch (IOException ioe) {
@@ -865,7 +866,7 @@ public abstract class NanoHTTPD {
 
         @Override
         public void execute() throws IOException {
-            Log.e(TAG, "---execute---");
+            Log.e(TAG, "HTTPSession：---execute---");
             Response r = null;
             try {
                 // Read the first 8192 bytes.
@@ -1342,6 +1343,7 @@ public abstract class NanoHTTPD {
      * HTTP response. Return one of these from serve().
      */
     public static class Response implements Closeable {
+        private static final String TAG = "xiaxl: Response";
 
         public interface IStatus {
 
