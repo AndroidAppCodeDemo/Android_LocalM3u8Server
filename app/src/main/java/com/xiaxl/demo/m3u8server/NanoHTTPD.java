@@ -95,7 +95,7 @@ public abstract class NanoHTTPD {
      */
     public class ClientHandler implements Runnable {
 
-        private final String TAG = "ClientHandler";
+        private final String TAG = "xiaxl: ClientHandler";
 
         // 客户端输入流
         private final InputStream inputStream;

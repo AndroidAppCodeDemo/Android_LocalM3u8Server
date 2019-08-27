@@ -107,7 +107,7 @@ public class MainActivity extends Activity {
 
         Log.e("xiaxl: ", "---playVideo---");
 
-        String localUrl = String.format("http://127.0.0.1:%d%s", M3u8Server.PORT, Environment.getExternalStorageDirectory().getPath() + "/encrypt_m3u8/encrypt.m3u8");
+        String localUrl = String.format("http://127.0.0.1:%d%s", M3u8Server.PORT, Environment.getExternalStorageDirectory().getPath() + "/local_m3u8/local.m3u8");
         Log.e("xiaxl: ", "localUrl: " + localUrl);
         //
         //Prepare the player with the source.
